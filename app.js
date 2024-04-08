@@ -1,6 +1,6 @@
 import express from 'express'
-import productsRouter from './src/routes/products.router.js'
-import cartRouter from './src/routes/cart.router.js'
+import productsRouter from './src/Routes/products.router.js'
+import cartRouter from './src/Routes/cart.router.js'
 const app = express()
 
 app.use(express.json())
