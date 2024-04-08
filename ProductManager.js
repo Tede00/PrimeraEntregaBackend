@@ -1,4 +1,4 @@
-const fs = require('fs').promises;
+import fs from 'fs';
 
 class ProductManager {
     #products;
@@ -94,7 +94,8 @@ class ProductManager {
     }
 }
 
-module.exports = ProductManager;
+export default ProductManager
+// module.exports = ProductManager;
 
 
 // const path = './data.json'
