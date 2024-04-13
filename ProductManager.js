@@ -86,7 +86,7 @@ class ProductManager {
             }
             productsDB.splice(index, 1);
             await fs.writeFile(this.path, JSON.stringify(productsDB), 'utf-8');
-            return productsDB;
+            return 'Producto eliminado';
         } catch (error) {
             console.log(error);
             return 'Ocurrió un error al intentar eliminar el producto.';

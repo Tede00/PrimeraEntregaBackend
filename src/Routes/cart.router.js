@@ -12,7 +12,7 @@ const startServer = async () => {
         const carts = await productManager.getProduct();
         router.post('/', (req, res) => {
             const newCart = {
-                id: carts[carts.length - 1].id + 1,
+                id: carts.length ? carts[carts.length - 1].id + 1 : 1,
                 products: [],
             };
             carts.push(newCart);
@@ -21,34 +21,27 @@ const startServer = async () => {
         
         router.get('/:cid', (req,res)=>{
             const {cid} = req.params
-            const cart = carts.find(c => c.id === parseInt(cid))
-            if (!cart) return res.status(404).send({ status: 'error', error: 'Cart not found' });
-            const productsInCart = cart.products.map(product =>{
-                return{
-                    product: product.product,
-                    quantity: product.quantity
-                }
-            })
-            res.send({status:'success', payload: productsInCart})
+            const cart =  productManager.getProductById(cid);
+            if (!cart) {
+                return res.status(404).send({ error: 'Cart not found' });
+            }
+            res.send({status:'success', payload: cart})
         })
         
         router.post('/:cid/product/:pid', (req, res) => {
             const { cid, pid } = req.params;
-            const cartIndex = carts.findIndex(c => c.id === parseInt(cid));
-            if (!carts[cartIndex]) return res.status(404).send({ status: 'error', error: 'Cart not found' });
-            
-            const productIndex = carts[cartIndex].products.findIndex(p => p.product === parseInt(pid));
-            if (productIndex === -1) {
-                carts[cartIndex].products.push({ product: parseInt(pid), quantity: 1 });
-            } else {
-                carts[cartIndex].products[productIndex].quantity++;
+            const { quantity } = req.body;
+
+            if (typeof quantity !== 'number' || quantity < 1) {
+                return res.status(400).send({ message: 'La cantidad debe ser un numero positivo' });
             }
-            res.send({ status: 'success', message: 'Product added to cart' });
+        
+            const cart = productManager.addProduct(cid, pid, quantity);
+            res.send({ status: 'success', payload: cart });
         });
     }
-    catch (error) {
+    catch (err) {
         console.error('Error al leer el archivo:', err);
-        carts = []; 
     }
 }
 

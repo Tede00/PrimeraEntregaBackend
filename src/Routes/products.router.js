@@ -18,6 +18,9 @@ const startServer = async () => {
         router.get('/:pid', (req, res) => {
             const { pid } = req.params;
             const product = products.find(p => p.id === parseInt(pid));
+            if (!product) {
+                return res.status(404).send('Producto no encontrado');
+            }
             res.send(product);
         })
         // Carga de productos
@@ -26,7 +29,6 @@ const startServer = async () => {
             if(!title || !description || !code || !price || !stock || category) return res.send({status: 'error', error: 'faltan campos'})
 
             const newProduct = {
-                id: products[products.length - 1].id + 1,
                 title, 
                 description, 
                 code, 
@@ -37,33 +39,26 @@ const startServer = async () => {
                 thumbnails
             }
             products.push(newProduct)
-            res.send({ status: 'success', payload: newProduct })
+            const product = productManager.addProduct(newProduct)
+            res.send({ status: 'success', payload: product })
         })
         // Actualizar producto
         router.put('/:pid', (req, res) => {
-            const { pid } = req.params;
-            const productoToUpdate = req.body;
-
-            const productIndex = products.findIndex(product => product.id === parseInt(pid));
-            if (productIndex === -1) return res.status(404).send({ status: 'error', error: 'Product not found' });
-
-            products[productIndex] = { ...products[productIndex], ...productoToUpdate }; // Actualiza solo los campos proporcionados
-            res.send({ status: 'success', payload: products[productIndex] });
+            const productId = req.params.pid;
+            const updatedFields = req.body;
+            const product = productManager.updateProduct(productId, updatedFields);
+            res.send({ status: 'success', payload: product });
         });
 
         //Borra producto
         router.delete('/:pid', (req, res) => {
-            const { pid } = req.params;
-            const productIndex = products.findIndex(product => product.id === parseInt(pid));
-            if (productIndex === -1) return res.status(404).send({ status: 'error', error: 'Product not found' });
-
-            products.splice(productIndex, 1); // Elimina el producto del array
+            const productId = req.params.pid;
+            productManager.deleteProduct(productId);            
             res.send({ status: 'success', message: 'Product deleted successfully' });
         });
     }
-    catch (error) {
+    catch (err) {
         console.error('Error al leer el archivo:', err);
-        products = []; 
     }
 }
 
