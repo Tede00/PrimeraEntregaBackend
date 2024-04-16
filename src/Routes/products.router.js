@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import ProductManager from '../../ProductManager.js';
+import ProductManager from '../Managers/ProductManager.js';
 
 const router = Router()
-const path= './src/Routes/products.json'
+const path= './src/files/products.json'
 const startServer = async () => {
     try {
         const productManager = new ProductManager(path);
@@ -17,7 +17,7 @@ const startServer = async () => {
         // Prod por ID
         router.get('/:pid', (req, res) => {
             const { pid } = req.params;
-            const product = products.find(p => p.id === parseInt(pid));
+            const product = productManager.getProductById(pid);
             if (!product) {
                 return res.status(404).send('Producto no encontrado');
             }
@@ -25,20 +25,7 @@ const startServer = async () => {
         })
         // Carga de productos
         router.post('/', (req, res) => {
-            const { title, description, code, price, stock, category, thumbnails} = req.body
-            if(!title || !description || !code || !price || !stock || category) return res.send({status: 'error', error: 'faltan campos'})
-
-            const newProduct = {
-                title, 
-                description, 
-                code, 
-                price, 
-                status: true,
-                stock, 
-                category, 
-                thumbnails
-            }
-            products.push(newProduct)
+            const newProduct = req.body;
             const product = productManager.addProduct(newProduct)
             res.send({ status: 'success', payload: product })
         })

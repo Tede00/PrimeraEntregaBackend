@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 
 class ProductManager {
     #products;
@@ -20,21 +20,9 @@ class ProductManager {
     async addProduct(product) {
         try {
             const productsDB = await this.readFile();
-            const productFound = productsDB.find(prod => product.code === prod.code);
-            if (productFound) {
-                return '¡El producto ya existe!';
-            }
-            
-            if (productsDB.length === 0) {
-                product.id = 1;
-            } else {
-                product.id = productsDB[productsDB.length - 1].id + 1;
-            }
-            
+            product.id=productsDB.length ? productsDB[productsDB.length - 1].id + 1 : 1,
             productsDB.push(product);
-            
-            await fs.writeFile(this.path, JSON.stringify(productsDB), 'utf-8');
-            
+            await fs.writeFile(this.path, JSON.stringify(productsDB, null, 2),"utf-8");            
             return productsDB;
         } catch (error) {
             console.log(error);
@@ -53,7 +41,7 @@ class ProductManager {
     async getProductById(pid) {
         try {
             const productsDB = await this.readFile();
-            const product = productsDB.find(prod => prod.id === pid);
+            const product = productsDB.find(prod => prod.id === Number(pid));
             if (!product) return '¡El producto solicitado no está disponible!';
             return product;
         } catch (error) {
@@ -70,7 +58,7 @@ class ProductManager {
             }
             productsDB[index] = {...productsDB[index], ...productoToUpdate};
             await fs.writeFile(this.path, JSON.stringify(productsDB), 'utf-8');
-            return productsDB;
+            return productsDB[index];
         } catch (error) {
             console.log(error);
             return 'Ocurrió un error al intentar actualizar el producto.';

@@ -1,42 +1,31 @@
 import { Router } from 'express'
-import fs from 'fs';
-import ProductManager from '../../ProductManager.js';
+import {CartManager} from '../Managers/CartsManager.js';
 
 const router = Router()
 
-const path= './src/Routes/carrito.json'
+const path= './src/files/carrito.json'
 
 const startServer = async () => {
     try {
-        const productManager = new ProductManager(path);
-        const carts = await productManager.getProduct();
+        const cartManager = new CartManager(path);
+
         router.post('/', (req, res) => {
-            const newCart = {
-                id: carts.length ? carts[carts.length - 1].id + 1 : 1,
-                products: [],
-            };
-            carts.push(newCart);
+            const newCart = cartManager.createCart();
             res.send({ status: 'success', payload: newCart });
         });
         
         router.get('/:cid', (req,res)=>{
             const {cid} = req.params
-            const cart =  productManager.getProductById(cid);
+            const cart =  cartManager.getCartById(cid);
             if (!cart) {
                 return res.status(404).send({ error: 'Cart not found' });
             }
-            res.send({status:'success', payload: cart})
+            res.json(cart);
         })
         
         router.post('/:cid/product/:pid', (req, res) => {
             const { cid, pid } = req.params;
-            const { quantity } = req.body;
-
-            if (typeof quantity !== 'number' || quantity < 1) {
-                return res.status(400).send({ message: 'La cantidad debe ser un numero positivo' });
-            }
-        
-            const cart = productManager.addProduct(cid, pid, quantity);
+            const cart = cartManager.addProductToCart(cid, pid);
             res.send({ status: 'success', payload: cart });
         });
     }
